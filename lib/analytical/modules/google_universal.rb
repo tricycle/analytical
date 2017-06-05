@@ -11,6 +11,7 @@ module Analytical
       def init_javascript(location)
         init_location(location) do
           js = <<-HTML
+          <script>
           <!-- Analytical Init: Google Universal -->
 
           (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
@@ -21,21 +22,25 @@ module Analytical
           ga('create', '#{options[:key]}', 'auto', #{tracker_init_options});
           #{"ga('require', 'linkid', 'linkid.js');" if options[:enhanced_link_attribution]}
           #{"ga('require', 'ecommerce', 'ecommerce.js');" if options[:ecommerce]}
-          #{"ga('require', 'displayfeatures');" if options[:displayfeatures]}
+          #{"ga('require', 'displayfeatures');" if options[:display_advertising]}
           #{identify_commands.join("\n")}
           #{dimension_commands.join("\n")}
           ga('send', 'pageview');
           </script>
           HTML
+          clear_commands
           js
         end
-        clear_commands
       end
 
       def event(name, *args)
         data = args.first || {}
         data = data[:value] if data.is_a?(Hash)
         ga 'send', 'event', 'Event', name, data.to_s
+      end
+
+      def custom_event(category, action, label = nil, value = nil)
+        ga 'send', 'event', category, action, label, value
       end
 
       def identify(id, *_args)
